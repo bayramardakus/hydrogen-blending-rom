@@ -1,0 +1,331 @@
+{
+ "nodes": [
+  {
+   "i": 0,
+   "scigrid_id": "LKD_N_167",
+   "lat": 52.82459300000001,
+   "lon": 11.031503,
+   "degree": 5
+  },
+  {
+   "i": 1,
+   "scigrid_id": "INET_N_1550",
+   "lat": 51.891723,
+   "lon": 11.555702,
+   "degree": 2
+  },
+  {
+   "i": 2,
+   "scigrid_id": "INET_N_1570",
+   "lat": 51.8655,
+   "lon": 11.5738,
+   "degree": 1
+  },
+  {
+   "i": 3,
+   "scigrid_id": "INET_N_1842",
+   "lat": 52.2985,
+   "lon": 11.6796,
+   "degree": 1
+  },
+  {
+   "i": 4,
+   "scigrid_id": "LKD_N_166",
+   "lat": 53.07483000000001,
+   "lon": 8.186253,
+   "degree": 2
+  },
+  {
+   "i": 5,
+   "scigrid_id": "LKD_N_320",
+   "lat": 52.402359,
+   "lon": 8.253166,
+   "degree": 2
+  },
+  {
+   "i": 6,
+   "scigrid_id": "LKD_N_39",
+   "lat": 51.679284,
+   "lon": 7.6404429999999985,
+   "degree": 1
+  },
+  {
+   "i": 7,
+   "scigrid_id": "LKD_N_430",
+   "lat": 51.750252,
+   "lon": 11.759217,
+   "degree": 3
+  },
+  {
+   "i": 8,
+   "scigrid_id": "LKD_N_432",
+   "lat": 51.80334000000001,
+   "lon": 11.751399,
+   "degree": 1
+  },
+  {
+   "i": 9,
+   "scigrid_id": "LKD_N_433",
+   "lat": 51.861365,
+   "lon": 11.686332,
+   "degree": 4
+  },
+  {
+   "i": 10,
+   "scigrid_id": "LKD_N_438",
+   "lat": 52.089139,
+   "lon": 11.543642,
+   "degree": 2
+  },
+  {
+   "i": 11,
+   "scigrid_id": "LKD_N_441",
+   "lat": 51.95098,
+   "lon": 11.78577,
+   "degree": 1
+  },
+  {
+   "i": 12,
+   "scigrid_id": "LKD_N_444",
+   "lat": 52.028699,
+   "lon": 11.630428,
+   "degree": 2
+  },
+  {
+   "i": 13,
+   "scigrid_id": "LKD_N_446",
+   "lat": 52.207464,
+   "lon": 11.467395,
+   "degree": 4
+  },
+  {
+   "i": 14,
+   "scigrid_id": "LKD_N_448",
+   "lat": 52.209259,
+   "lon": 11.615692,
+   "degree": 2
+  },
+  {
+   "i": 15,
+   "scigrid_id": "LKD_N_457",
+   "lat": 52.347906,
+   "lon": 11.365749,
+   "degree": 3
+  },
+  {
+   "i": 16,
+   "scigrid_id": "LKD_N_458",
+   "lat": 52.5244,
+   "lon": 11.254514,
+   "degree": 3
+  },
+  {
+   "i": 17,
+   "scigrid_id": "LKD_N_459",
+   "lat": 52.680084,
+   "lon": 11.177917,
+   "degree": 2
+  },
+  {
+   "i": 18,
+   "scigrid_id": "LKD_N_461",
+   "lat": 52.83726899999999,
+   "lon": 11.094051,
+   "degree": 1
+  },
+  {
+   "i": 19,
+   "scigrid_id": "LKD_N_463",
+   "lat": 52.820686,
+   "lon": 11.21891,
+   "degree": 1
+  },
+  {
+   "i": 20,
+   "scigrid_id": "LKD_N_570",
+   "lat": 51.776226,
+   "lon": 12.022266,
+   "degree": 1
+  },
+  {
+   "i": 21,
+   "scigrid_id": "SEQ_11030_p",
+   "lat": 52.96381700000001,
+   "lon": 9.335639,
+   "degree": 2
+  }
+ ],
+ "edges": [
+  {
+   "a": 0,
+   "b": 15,
+   "length_km": 59.568,
+   "dia_m": 0.9,
+   "pmax_bar": 55.0
+  },
+  {
+   "a": 0,
+   "b": 17,
+   "length_km": 19.573,
+   "dia_m": 0.9,
+   "pmax_bar": 55.0
+  },
+  {
+   "a": 0,
+   "b": 18,
+   "length_km": 4.433,
+   "dia_m": 0.9,
+   "pmax_bar": 70.0
+  },
+  {
+   "a": 0,
+   "b": 19,
+   "length_km": 16.812,
+   "dia_m": 0.9,
+   "pmax_bar": 25.0
+  },
+  {
+   "a": 0,
+   "b": 21,
+   "length_km": 137.124,
+   "dia_m": 1.2,
+   "pmax_bar": 70.0
+  },
+  {
+   "a": 1,
+   "b": 2,
+   "length_km": 3.17,
+   "dia_m": 0.7003,
+   "pmax_bar": 70.0
+  },
+  {
+   "a": 1,
+   "b": 9,
+   "length_km": 9.585,
+   "dia_m": 0.9,
+   "pmax_bar": 70.0
+  },
+  {
+   "a": 3,
+   "b": 14,
+   "length_km": 10.838,
+   "dia_m": 0.9,
+   "pmax_bar": 70.0
+  },
+  {
+   "a": 4,
+   "b": 5,
+   "length_km": 76.164,
+   "dia_m": 1.0,
+   "pmax_bar": 84.0
+  },
+  {
+   "a": 4,
+   "b": 21,
+   "length_km": 78.722,
+   "dia_m": 1.2,
+   "pmax_bar": 70.0
+  },
+  {
+   "a": 5,
+   "b": 6,
+   "length_km": 96.769,
+   "dia_m": 0.8,
+   "pmax_bar": 80.0
+  },
+  {
+   "a": 7,
+   "b": 8,
+   "length_km": 5.929,
+   "dia_m": 0.6149,
+   "pmax_bar": 70.0
+  },
+  {
+   "a": 7,
+   "b": 9,
+   "length_km": 13.337,
+   "dia_m": 0.6,
+   "pmax_bar": 63.0
+  },
+  {
+   "a": 7,
+   "b": 20,
+   "length_km": 22.037,
+   "dia_m": 0.9,
+   "pmax_bar": 70.0
+  },
+  {
+   "a": 9,
+   "b": 11,
+   "length_km": 13.005,
+   "dia_m": 0.66,
+   "pmax_bar": 63.0
+  },
+  {
+   "a": 9,
+   "b": 12,
+   "length_km": 19.177,
+   "dia_m": 0.9,
+   "pmax_bar": 55.0
+  },
+  {
+   "a": 10,
+   "b": 12,
+   "length_km": 8.968,
+   "dia_m": 0.9,
+   "pmax_bar": 55.0
+  },
+  {
+   "a": 10,
+   "b": 13,
+   "length_km": 14.528,
+   "dia_m": 1.4,
+   "pmax_bar": 100.0
+  },
+  {
+   "a": 13,
+   "b": 14,
+   "length_km": 10.11,
+   "dia_m": 0.9,
+   "pmax_bar": 70.0
+  },
+  {
+   "a": 13,
+   "b": 15,
+   "length_km": 17.125,
+   "dia_m": 0.9,
+   "pmax_bar": 55.0
+  },
+  {
+   "a": 13,
+   "b": 16,
+   "length_km": 39.072,
+   "dia_m": 0.9,
+   "pmax_bar": 55.0
+  },
+  {
+   "a": 15,
+   "b": 16,
+   "length_km": 22.053,
+   "dia_m": 0.9,
+   "pmax_bar": 55.0
+  },
+  {
+   "a": 16,
+   "b": 17,
+   "length_km": 18.074,
+   "dia_m": 0.9,
+   "pmax_bar": 55.0
+  }
+ ],
+ "supply": 0,
+ "western_hub": 21,
+ "n_nodes": 22,
+ "n_pipes": 23,
+ "total_km": 716.2,
+ "n_loops": 2,
+ "diameters_m": [
+  0.6,
+  1.4
+ ]
+}
