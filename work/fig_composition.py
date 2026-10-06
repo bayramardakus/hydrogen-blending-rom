@@ -37,16 +37,24 @@ for j,n in enumerate([1,2,4,3,5]):
 # injection and baseline levels as LEGEND entries, not as text inside the axes,
 # where at final print size they collided with the title.
 ax.axhline(20,color=PALETTE["mut"],ls=":",
-           label="Injected and baseline fractions [5 and 20 vol%]")
+           label="Injected and baseline [5, 20 vol%]")
 ax.axhline(5,color=PALETTE["mut"],ls=":")
 ax.set_xlabel("Time [h]")
 fs.ylabel(ax,"Delivered H$_2$ [vol%]")
 ax.set_xlim(0,30)
 ax.set_title("Composition-front propagation after a step in injection")
+# headroom above the 20 vol% guide, which the curves were running into
+ax.set_ylim(top=23.0)
 fs.legend_below(ax,ncol=3,y=-0.30)
 fs.save(fig, f"{FIG}/fig_composition.png", legend_rows=2)
 # report arrival delays (time to reach 90% of step at each node)
 for n in [1,2,3,4,5]:
     yn=np.array([node_fraction(Wnode,sol.y[:,i],n,0.20,net.source) for i in range(len(tt))])
-    idx=np.argmax(yn>=0.05+0.9*0.15)
-    print(f"  N{n}: 90% arrival at {th[idx]:.1f} h")
+    hit=np.flatnonzero(yn>=0.05+0.9*0.15)
+    if hit.size:
+        print(f"  N{n}: 90% arrival at {th[hit[0]]:.1f} h")
+    else:
+        # argmax on an all-False array returns 0, which printed "0.0 h" for the
+        # two nodes that never reach 90% inside the window: the opposite of the
+        # truth. Report the fact instead.
+        print(f"  N{n}: 90% not reached within {th[-1]:.0f} h")

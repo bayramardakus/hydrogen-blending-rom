@@ -70,7 +70,7 @@ def run(T_end=None, surge_total=None):
     #      floor. Only the SCALING is corrected. (A minimum-effort economic form
     #      would additionally be offset-free under a sustained demand change;
     #      that is noted as future work rather than adopted here, since it is a
-    #      design change no reviewer requested.)
+    #      design change outside the scope of this study.)
     Qx=np.zeros((ns,ns)); Qx[:nN-1,:nN-1]=np.eye(nN-1)
     Ru=np.array([[0.05]])
     W_SLACK=1e4

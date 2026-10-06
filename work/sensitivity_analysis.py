@@ -1,7 +1,7 @@
 """
-sensitivity_analysis.py  —  Revision-2 sensitivity / robustness package.
+sensitivity_analysis.py  —  sensitivity and robustness studies.
 
-Addresses the open reviewer questions that the current package does not answer:
+The studies bound the modelling choices the rest of the package makes:
 
   S1  Numerical diffusion of the M-cell upwind transport model.
       Quantifies arrival-time, front-width and (safety-critical) PEAK error of
@@ -421,10 +421,10 @@ def figures(net, props, P0, Q0, s1rows, te, refP, s2, s3):
                label="mean over time (as reported)")
     ax[2].barh(y + .2, [s['max'] for s in s2], .38, color="#D95F0E",
                label="true worst case")
-    ax[2].set_yticks(y); ax[2].set_yticklabels(labs, fontsize=7)
+    ax[2].set_yticks(y); ax[2].set_yticklabels(labs, fontsize=8)
     ax[2].set_xlabel("delivered-blend error [vol-pts]")
     ax[2].set_title("(c) Frozen-flow validity envelope")
-    ax[2].grid(alpha=.3, axis='x'); ax[2].legend(frameon=False, fontsize=7.5)
+    ax[2].grid(alpha=.3, axis='x'); ax[2].legend(frameon=False, fontsize=8.5)
     fig.tight_layout(); fig.savefig("fig_sensitivity_transport.png"); plt.close(fig)
     print("\nsaved fig_sensitivity_transport.png")
 
@@ -440,7 +440,7 @@ def figures(net, props, P0, Q0, s1rows, te, refP, s2, s3):
     ax[0].set_xlabel("pressure-transducer noise [% of reading]")
     ax[0].set_ylabel("flow-estimate error [kg/s]")
     ax[0].set_title("(a) Unmeasured flow states")
-    ax[0].grid(alpha=.3, which="both"); ax[0].legend(frameon=False, fontsize=7.5)
+    ax[0].grid(alpha=.3, which="both"); ax[0].legend(frameon=False, fontsize=8.5)
 
     ax[1].plot(pct, [r['paper'][0] for r in s3], 'o-', lw=1.8, color="#B0357F",
                label="paper tuning")

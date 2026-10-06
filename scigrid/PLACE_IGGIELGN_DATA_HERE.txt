@@ -1,15 +1,15 @@
 The SciGRID_gas IGGIELGN data set (v1.1.2) is third-party licensed and is NOT
-redistributed in this repository.
+redistributed in this package.
 
 Download it from Zenodo:
 
-  https://doi.org/10.5281/zenodo.4767098
+    https://doi.org/10.5281/zenodo.4767098
 
 and unpack it so that the CSV files sit in this directory:
 
-  scigrid/data/IGGIELGN_PipeSegments.csv
-  scigrid/data/IGGIELGN_Nodes.csv
-  ...
+    scigrid/data/IGGIELGN_PipeSegments.csv
+    scigrid/data/IGGIELGN_Nodes.csv
+    ...
 
-work/extract_subnet.py then reproduces work/scigrid_subnet.json bit-identically
-(verify with md5sum over repeated runs).
+`work/extract_subnet.py` then reproduces `work/scigrid_subnet.json`
+bit-identically (verify with md5sum over repeated runs).

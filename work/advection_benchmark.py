@@ -1,7 +1,7 @@
 """advection_benchmark.py - convergence of the multi-cell upwind transport model.
 
-WHAT CHANGED
-------------
+IMPLEMENTATION NOTES
+--------------------
 (1) SOLVER.  The previous version integrated the transport ODE with LSODA from
     y0 = y_base with u(0) = y_base.  That is an EXACT equilibrium, so the solver
     grew its step without bound and stepped straight over a pulse beginning

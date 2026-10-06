@@ -56,7 +56,7 @@ def node_dot(ax, x, y, color=C_EL):
     ax.scatter([x], [y], s=45, color=color, zorder=4)
 
 
-fig, axs = plt.subplots(1, 2, figsize=(13.5, 4.8), gridspec_kw={"width_ratios":[1, 1.15]})
+fig, axs = plt.subplots(1, 2, figsize=(10.0, 3.6), gridspec_kw={"width_ratios":[1, 1.15]})
 
 # ================= (a) single pipe segment -> RLC branch =================
 ax = axs[0]; ax.set_title("(a) Pipe segment $\\to$ RLC branch", fontsize=15)
@@ -66,9 +66,9 @@ for xx in np.linspace(0.7, 3.7, 6):
     ax.annotate("", (xx+0.28, 3.75), (xx, 3.75),
                 arrowprops=dict(arrowstyle="-|>", color=C_PIPE, lw=1.4))
 ax.text(2.2, 4.5, "gas flow  $\\phi$", ha="center", fontsize=13, color=C_PIPE)
-ax.text(0.35, 3.05, "$P_a$", ha="center", fontsize=13.5, color=C_PIPE)
-ax.text(4.05, 3.05, "$P_b$", ha="center", fontsize=13.5, color=C_PIPE)
-ax.text(2.2, 3.10, "friction, inertia, compressibility", ha="center",
+ax.text(0.10, 3.02, "$P_a$", ha="left", fontsize=13.5, color=C_PIPE)
+ax.text(4.35, 3.02, "$P_b$", ha="right", fontsize=13.5, color=C_PIPE)
+ax.text(2.2, 3.05, "friction, inertia, linepack", ha="center",
         fontsize=13, color="0.4", style="italic")
 # equivalence arrow
 ax.annotate("", (2.2, 2.70), (2.2, 2.95), arrowprops=dict(arrowstyle="-|>", color="0.4", lw=2))

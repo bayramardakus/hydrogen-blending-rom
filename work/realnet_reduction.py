@@ -72,8 +72,14 @@ def run_case(x_h2, net, x0_warm, M_ref=5):
     ferr=Q_rlc-Q_ref
     qsc=np.maximum(np.abs(Q_ref), 0.01*np.abs(Q_ref).max())
     fmape=np.mean(np.abs(ferr)/qsc)*100
+    frmse=np.sqrt(np.mean(ferr**2))
+    # Coefficient of determination alongside the MAPE, pooled over
+    # nodes (pipes) and time, with the reference series as the baseline.
+    pr2=1.0-np.sum(err**2)/np.sum((Pr-Pr.mean())**2)
+    qr2=1.0-np.sum(ferr**2)/np.sum((Q_ref-Q_ref.mean())**2)
     return dict(x=x_h2, a=props['a'], n_ref=meta['n_state'], n_rlc=info['ns'],
                 rmse=rmse, nrmse=nrmse, mape=mape, maxerr=maxerr, fmape=fmape,
+                frmse=frmse, pr2=pr2, qr2=qr2,
                 t_ref=t_ref, t_rlc=t_rlc, speedup=t_ref/t_rlc, ref_ok=bool(sol_ref.success))
 
 def main():

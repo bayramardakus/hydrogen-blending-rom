@@ -84,12 +84,19 @@ def apply_style():
         "font.family": "serif", "font.serif": ["DejaVu Serif"],
         # Type sizes are the sizes that reach the printed page, because the
         # canvas is the printed size. Elsevier asks for >= 7 pt at final size.
-        "font.size": 8,
-        "axes.titlesize": 8.5,
-        "axes.labelsize": 8,
-        "xtick.labelsize": 7.5,
-        "ytick.labelsize": 7.5,
-        "legend.fontsize": 7,
+        # Type sizes are set so that no label reaches the printed page below
+        # 9 pt. The
+        # figures are set at 0.93 to 1.00 of \linewidth, so the authored size
+        # is divided by that factor on the page; 10.5 pt authored is 9.8 pt
+        # delivered at the commonest setting. The canvas sizes are unchanged,
+        # so the figures keep the layout the author approved; only the type is
+        # larger.
+        "font.size": 10.5,
+        "axes.titlesize": 11,
+        "axes.labelsize": 10.5,
+        "xtick.labelsize": 10.5,
+        "ytick.labelsize": 10.5,
+        "legend.fontsize": 10.2,
         "axes.linewidth": 0.6,
         "axes.grid": True,
         "grid.alpha": 0.30,
@@ -123,13 +130,13 @@ def apply_style_diagram():
     """
     apply_style()
     rcParams.update({
-        "font.size": 13, "axes.titlesize": 14, "axes.labelsize": 13,
-        "xtick.labelsize": 12, "ytick.labelsize": 12, "legend.fontsize": 11.5,
+        "font.size": 16, "axes.titlesize": 17, "axes.labelsize": 16,
+        "xtick.labelsize": 15.5, "ytick.labelsize": 15.5, "legend.fontsize": 14.8,
         "axes.linewidth": 0.9, "lines.linewidth": 1.9,
     })
 
 
-def legend_below(ax, ncol=2, y=-0.34, fontsize=7.0, handles=None, labels=None):
+def legend_below(ax, ncol=2, y=-0.34, fontsize=10.2, handles=None, labels=None):
     """Frameless legend centred below the axes, clear of the x-label.
 
     `y` is in axes coordinates. Pass the SAME y for every panel of a figure so
@@ -144,7 +151,7 @@ def legend_below(ax, ncol=2, y=-0.34, fontsize=7.0, handles=None, labels=None):
         ax.legend(**kw)
 
 
-def legend_row(ax, n_entries, y=-0.34, fontsize=7.0, max_per_row=3):
+def legend_row(ax, n_entries, y=-0.34, fontsize=10.2, max_per_row=3):
     """Legend below the axes with a bounded number of columns.
 
     Returns the number of rows used, so the caller can reserve the right amount
@@ -170,7 +177,7 @@ def title(ax, letter, text, single=False):
     ax.set_title(text if single else f"({letter}) {text}")
 
 
-def ylabel(ax, text, limit=24):
+def ylabel(ax, text, limit=20):
     """Set a y-label, warning if it is long enough to overflow a short panel."""
     plain = (text.replace("$_2$", "2").replace("$", "")
                  .replace("\\", "").replace("{", "").replace("}", ""))

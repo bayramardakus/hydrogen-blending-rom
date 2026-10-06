@@ -168,30 +168,29 @@ def R2_forecast_error(levels=(0.0, 0.10, 0.20, 0.30)):
           f"{'mass uptake':>12}")
     rows = []
     base_e, base_w = RB.avail_east, RB.avail_west
-    try:
-        for lvl in levels:
-            RB.DELTA = 0.02
-            rng = np.random.default_rng(11)
-            n = 400
-            e = np.zeros(n)
-            for i in range(1, n):                 # AR(1) multiplicative error
-                e[i] = 0.9 * e[i-1] + rng.normal(0, lvl)
+    for lvl in levels:
+        RB.DELTA = 0.02
+        rng = np.random.default_rng(11)
+        n = 400
+        e = np.zeros(n)
+        for i in range(1, n):                     # AR(1) multiplicative error
+            e[i] = 0.9 * e[i-1] + rng.normal(0, lvl)
 
-            def mk(base):
-                def f(t):
-                    i = min(int(t / RB.TS), n - 1)
-                    return float(np.clip(base(t) * (1.0 + e[i]), RB.Y_BASE, 0.35))
-                return f
+        def mk(base):
+            def f(t):
+                i = min(int(t / RB.TS), n - 1)
+                return float(np.clip(base(t) * (1.0 + e[i]), RB.Y_BASE, 0.35))
+            return f
 
-            RB.avail_east, RB.avail_west = mk(base_e), mk(base_w)
-            r = RB.run("mpc", verbose=False)
-            RB.avail_east, RB.avail_west = base_e, base_w
-            m = RB.uptake(r)
-            rows.append(dict(lvl=lvl, delta=0.02, **m))
-            print(f"{lvl*100:8.0f}% {2.0:8.1f} | {m['peak']:7.2f} "
-                  f"{m['viol']:7.1f} {m['mass']:12.1f}")
-    finally:
-        RB.avail_east, RB.avail_west = base_e, base_w
+        # Only the SCHEDULER's forecast is perturbed. The plant keeps the true
+        # availability and clips the realised injection to it, so what is being
+        # tested is a mismatch between plan and truth rather than a different day.
+        r = RB.run("mpc", verbose=False,
+                   fc_east=mk(base_e), fc_west=mk(base_w))
+        m = RB.uptake(r)
+        rows.append(dict(lvl=lvl, delta=0.02, **m))
+        print(f"{lvl*100:8.0f}% {2.0:8.1f} | {m['peak']:7.2f} "
+              f"{m['viol']:7.1f} {m['mass']:12.1f}")
 
     worst = max(r['peak'] for r in rows)
     print(f"\n  Worst delivered fraction over all forecast-error levels: "
@@ -208,64 +207,72 @@ def R2_forecast_error(levels=(0.0, 0.10, 0.20, 0.30)):
           "Re-planning every")
     print("  30 min on the measured history therefore absorbs the error.")
     print()
-    print("  Uptake is not monotone in the forecast error, and should not be read "
-          "as a benefit:")
-    print("  an over-stated forecast makes the scheduler plan more aggressively, "
-          "and the plant")
-    print("  then clips the realised injection to the true availability, so the "
-          "measured uptake")
-    print("  rises while the safety margin is unchanged. The quantity to read "
-          "here is the")
-    print("  violation column, which stays at zero.")
+    print("  What the forecast error costs is uptake, not safety: it falls "
+          "monotonically as the")
+    print("  error grows, because the scheduler plans against a profile the "
+          "plant will not")
+    print("  deliver and the realised injection is clipped to the truth. The "
+          "peak delivered")
+    print("  fraction moves AWAY from the limit, so this source is not part "
+          "of the adverse")
+    print("  uncertainty budget.")
     RES['R2'] = rows
     return rows
 
 
 # ======================================================================
 def figure(r1, r2):
-    plt.rcParams.update({"font.family": "serif", "font.serif": ["DejaVu Serif"],
-                         "font.size": 9, "savefig.dpi": 300,
-                         "savefig.bbox": "tight", "axes.grid": True,
-                         "grid.alpha": 0.3, "axes.axisbelow": True})
-    fig, ax = plt.subplots(1, 2, figsize=(8.6, 3.2))
+    """Drawn in the house style of figstyle.py, so this figure matches the
+    other eighteen. Annotations that would sit inside the axes are legend
+    entries here, per rule 3 of that module."""
+    import figstyle as FS
+    FS.apply_style()
+    P = FS.PALETTE
+    fig, ax = FS.panels(2, height=3.6)
 
     m = [r['m'] for r in r1]
-    ax[0].plot(m, [r['q_mean'] for r in r1], 'o-', color="#2C7FB8", lw=1.7,
-               label="mean")
-    ax[0].plot(m, [r['q_max'] for r in r1], 's--', color="#B0357F", lw=1.4,
-               label="worst case")
-    ax[0].axhline(0.03 * 72, color="#9CA3AF", ls=":", lw=1.2)
-    ax[0].annotate("3 % of mean pipe flow", (3.2, 0.03 * 72 + 0.15),
-                   fontsize=7.5, color="0.35")
-    ax[0].set_xlabel("instrumented nodes (of 21)")
-    ax[0].set_ylabel("flow-estimate error [kg/s]")
-    ax[0].set_ylim(0, None)
-    ax[0].set_title("(a) Observer under sparse telemetry")
-    ax[0].legend(frameon=False, loc="center right")
+    ax[0].plot(m, [r['q_mean'] for r in r1], 'o' + FS.DASH[0], color=P['rlc'],
+               lw=1.4, ms=3.0, label='Mean over the horizon')
+    ax[0].plot(m, [r['q_max'] for r in r1], 's' + FS.DASH[1], color=P['ol'],
+               lw=1.4, ms=3.0, label='Worst case')
+    ax[0].axhline(0.03 * 72.15, color=P['mut'], ls=FS.DASH[3], lw=1.1,
+                  label='3% of mean pipe flow')
+    ax[0].set_xlabel('Instrumented nodes [of 21]')
+    FS.ylabel(ax[0], 'Flow error [kg/s]')
+    # headroom: the worst-case curve was running along the top of the frame
+    ax[0].set_ylim(0, max(r['q_max'] for r in r1) * 1.25)
+    FS.title(ax[0], 'a', 'Observer under sparse telemetry')
+    FS.legend_row(ax[0], 3, max_per_row=1)
 
     lv = [r['lvl'] * 100 for r in r2]
-    ax[1].plot(lv, [r['peak'] for r in r2], 'o-', color="#2C7FB8", lw=1.7,
-               label="peak delivered blend")
-    ax[1].axhline(20, color="#D95F0E", ls=":", lw=1.4)
-    ax[1].axhline(18, color="#41AB5D", ls="-.", lw=1.2)
-    ax[1].annotate("20 vol% limit", (0.5, 20.25), fontsize=7.5, color="#D95F0E")
-    ax[1].annotate("constraint with back-off", (0.5, 17.1), fontsize=7.5,
-                   color="#41AB5D")
-    ax[1].set_xlabel(r"green-H$_2$ forecast error [%, $1\sigma$ AR(1)]")
-    ax[1].set_ylabel(r"peak delivered H$_2$ [vol%]")
+    ax[1].plot(lv, [r['peak'] for r in r2], 'o' + FS.DASH[0], color=P['rlc'],
+               lw=1.4, ms=3.0, label='Peak delivered blend')
+    ax[1].axhline(20, color=P['acc'], ls=FS.DASH[2], lw=1.3,
+                  label='Interchangeability limit, 20 vol%')
+    ax[1].axhline(18, color=P['grn'], ls=FS.DASH[3], lw=1.2,
+                  label='Constraint with back-off')
+    ax[1].set_xlabel(r'Green-H$_2$ forecast error [%, $1\sigma$ AR(1)]')
+    FS.ylabel(ax[1], r'Peak delivered H$_2$ [vol%]')
     ax[1].set_ylim(14, 21.5)
-    ax[1].set_title("(b) Scheduler under forecast error")
-    ax[1].legend(frameon=False, loc="lower left")
+    FS.title(ax[1], 'b', 'Scheduler under forecast error')
+    FS.legend_row(ax[1], 3, max_per_row=1)
 
-    fig.tight_layout()
-    fig.savefig(f"{FIGDIR}/fig_robustness.png")
-    plt.close(fig)
+    FS.save(fig, f"{FIGDIR}/fig_robustness.png", legend_rows=3)
     print("\nsaved fig_robustness.png")
 
 
 if __name__ == "__main__":
-    r1 = R1_sparse_telemetry()
-    r2 = R2_forecast_error()
-    figure(r1, r2)
-    np.save("robustness_studies.npy", RES, allow_pickle=True)
-    print("saved robustness_studies.npy")
+    import sys
+    if _os.path.exists("robustness_studies.npy") and "--rerun" not in sys.argv:
+        # Re-plot from the stored results. Pass --rerun to recompute them.
+        _d = np.load("robustness_studies.npy", allow_pickle=True).item()
+        r1, r2 = list(_d["R1"]), list(_d["R2"])
+        print("re-plotting from robustness_studies.npy "
+              "(pass --rerun to recompute)")
+        figure(r1, r2)
+    else:
+        r1 = R1_sparse_telemetry()
+        r2 = R2_forecast_error()
+        figure(r1, r2)
+        np.save("robustness_studies.npy", RES, allow_pickle=True)
+        print("saved robustness_studies.npy")

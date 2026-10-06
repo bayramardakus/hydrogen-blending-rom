@@ -1,8 +1,8 @@
 """realnet_blend.py - Case Study 3: closed-loop TWO-POINT blend scheduling on the
 real SciGRID_gas German H-gas sub-network.
 
-WHAT CHANGED RELATIVE TO THE PREVIOUS VERSION
----------------------------------------------
+IMPLEMENTATION NOTES
+--------------------
 (1) PREDICTOR.  The controller no longer uses a coarse M = 4 upwind state-space.
     It uses the finite-impulse-response (Markov-parameter) representation of a
     FINE transport model (M = 60 cells per pipe), built offline by
@@ -16,12 +16,12 @@ WHAT CHANGED RELATIVE TO THE PREVIOUS VERSION
       * a time-varying diurnal demand profile, with the steady flow field, the
         residence times and the junction mixing weights RECOMPUTED as the
         demands change - so the frozen-flow assumption of the predictor is
-        genuinely violated, which is what Reviewer 4 (M4) asked for;
+        genuinely violated;
       * pipe reversal handled explicitly (the gas column in a reversing pipe is
         flipped, and the upwind structure rebuilt);
       * injection actuator noise on the realised set-point.
-    The previous version advanced the "plant" with the controller's own
-    discrete model, which made zero constraint violation a tautology.
+    Advancing the "plant" with the controller's own discrete model would
+    make zero constraint violation a tautology, so it is avoided here.
 
 (3) BACK-OFF.  The delivered-composition constraint is imposed at
     y_max - DELTA, with DELTA taken from the quantified transport-model error
@@ -75,6 +75,14 @@ def avail_west(t):
 
 
 _PHASE = None
+
+
+def set_phase_seed(seed):
+    """Redraw the per-node demand phases. Used by the ensemble study, which
+    repeats the closed-loop run over independent draws of the two random inputs
+    the scenario carries: the demand phases and the injector actuator noise."""
+    global _PHASE
+    _PHASE = np.random.default_rng(seed).uniform(0, 2 * np.pi, 22)
 
 
 def demand_profile(net, t, amp=0.15):
@@ -229,11 +237,21 @@ def build_controller(G, Hu, Hp, n_inj, n_del, y_lim):
 
 
 def run(controller="mpc", Hu=None, Hp=None, N=None, T_END=None, verbose=True,
-        nominal_plant=False):
+        nominal_plant=False, fc_east=None, fc_west=None,
+        phase_seed=None, act_seed=0):
+    """fc_east / fc_west are the availability profiles the SCHEDULER plans
+    against. They default to the true profiles, which is the perfect-forecast
+    case. Passing a perturbed pair makes the scheduler plan against a forecast
+    while the plant continues to clip the realised injection to the true
+    availability, which is the only way a forecast error can be tested: if the
+    same perturbed profile drives both, the scheduler simply has perfect
+    knowledge of a different day."""
     """nominal_plant=True reproduces the PREVIOUS setup, in which the plant was
     advanced with the controller's own model on the nominal flow field. It is
     retained only so that the change in reported uptake between revisions can be
     attributed: it is not a closed-loop test."""
+    if phase_seed is not None:
+        set_phase_seed(phase_seed)
     net, props, P0, Q0 = realnet.build()
     src, hub = net.source, net.western_hub
     inj = [src, hub]
@@ -294,7 +312,11 @@ def run(controller="mpc", Hu=None, Hp=None, N=None, T_END=None, verbose=True,
                 return u, self.W @ self.y
         plant = _Nominal()
     else:
-        plant = Plant(net, props, P0, Q0, inj)
+        plant = Plant(net, props, P0, Q0, inj, seed=act_seed)
+    if fc_east is None:
+        fc_east = avail_east
+    if fc_west is None:
+        fc_west = avail_west
     hist = np.full((N, n_inj), Y_BASE)     # hist[0] = most recent
     u_last = np.full(n_inj, Y_BASE)
     nsteps = int(T_END / TS)
@@ -305,9 +327,10 @@ def run(controller="mpc", Hu=None, Hp=None, N=None, T_END=None, verbose=True,
         aE_now = avail_east(t) if t < T_INJ else Y_BASE
         aW_now = avail_west(t) if t < T_INJ else Y_BASE
         if t < T_INJ and controller == "mpc":
-            p_aE.value = np.array([avail_east(t + j*TS) if (t + j*TS) < T_INJ
+            # the horizon is the FORECAST; aE_now/aW_now below are the truth
+            p_aE.value = np.array([fc_east(t + j*TS) if (t + j*TS) < T_INJ
                                    else Y_BASE for j in range(Hu)])
-            p_aW.value = np.array([avail_west(t + j*TS) if (t + j*TS) < T_INJ
+            p_aW.value = np.array([fc_west(t + j*TS) if (t + j*TS) < T_INJ
                                    else Y_BASE for j in range(Hu)])
             p_free.value = (Psi @ (hist - Y_BASE).reshape(-1))
             p_uprev.value = u_last

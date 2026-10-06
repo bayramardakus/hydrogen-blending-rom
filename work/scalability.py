@@ -179,12 +179,20 @@ def make_scal_fig(rows):
 
 
 if __name__=="__main__":
-    rows=[]
-    for N in [6,12,24,40,60,80,100]:
-        r=time_case(N)
-        if r:
-            rows.append(r)
-            print(f"N={r['N']:3d} nodes, {r['nP']:3d} pipes, {r['ns']:3d} states, {r['km']:5.0f} km:"
-                  f"  build={r['t_build']:.2f} ms  MPC-QP={r['t_qp']:.2f} ms")
-    np.save("scal.npy",rows,allow_pickle=True)
+    import os, sys
+    # Wall-clock timings depend on the machine and on its load, so the figure
+    # and the numbers quoted in the manuscript come from ONE recorded run,
+    # stored in scal.npy. Pass --rerun to time the cases again on this machine.
+    if os.path.exists("scal.npy") and "--rerun" not in sys.argv:
+        rows=list(np.load("scal.npy",allow_pickle=True))
+        print("plotting from scal.npy (pass --rerun to re-time on this machine)")
+    else:
+        rows=[]
+        for N in [6,12,24,40,60,80,100]:
+            r=time_case(N)
+            if r:
+                rows.append(r)
+                print(f"N={r['N']:3d} nodes, {r['nP']:3d} pipes, {r['ns']:3d} states, {r['km']:5.0f} km:"
+                      f"  build={r['t_build']:.2f} ms  MPC-QP={r['t_qp']:.2f} ms")
+        np.save("scal.npy",rows,allow_pickle=True)
     make_scal_fig(rows)

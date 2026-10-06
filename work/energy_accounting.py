@@ -1,4 +1,4 @@
-"""energy_accounting.py — Case Study 3 simple energy balance (R2-C19 / R4-M10).
+"""energy_accounting.py — Case Study 3 simple energy balance.
 Compares (i) the chemical energy of green hydrogen absorbed into the grid,
 (ii) the parasitic compression work to inject that hydrogen at line pressure, and
 (iii) the extra compressor duty of the pressure-regulation MPC — to put the

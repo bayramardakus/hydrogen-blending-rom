@@ -19,10 +19,10 @@ STEPS = [
     ("rerun_blend_adv.py",     "didactic blend scheduling"),
     ("realnet_blend.py",       "Case Study 3 two-point blend scheduling"),
     ("energy_accounting.py",   "energy balance"),
-    ("robustness_studies.py",  "sparse telemetry; green-H2 forecast error [not in the paper]"),
-    ("reviewer_followups.py",  "two-way coupling magnitude; reversal threshold; uptake attribution"),
+    ("robustness_studies.py",  "sparse telemetry; green-H2 forecast error (not reported in the article)"),
+    ("coupling_reversal_uptake.py", "two-way coupling; reversal threshold; uptake attribution"),
     ("fig_parity.py",          "pandapipes parity figure"),
-    ("make_new_figures.py",    "figures revised in Revision 2"),
+    ("make_new_figures.py",    "the second group of manuscript figures"),
 ]
 
 

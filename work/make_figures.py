@@ -54,11 +54,16 @@ def fig_properties():
     # author.
     for i, xv in enumerate((5, 25)):
         ax.axvline(xv, color="0.7", lw=.8, ls=":",
-                   label="5 and 25 vol% cases" if i == 0 else None)
-    ax.set_xlabel("Hydrogen fraction [vol%]"); ax.set_ylabel("Relative to pure NG [%]")
-    ax.set_title("(b) Energy content and interchangeability"); ax.grid(alpha=.3)
-    legend_below(ax, ncol=3)
-    fs.save(fig, f"{FIG}/fig_properties.png", legend_rows=1)
+                   label="5, 25 vol% cases" if i == 0 else None)
+    ax.set_xlabel("Hydrogen fraction [vol%]")
+    # Shortened: at this type size the longer form was taller
+    # than the axes and its closing bracket was cropped by the panel title.
+    ax.set_ylabel("Relative to NG [%]")
+    # Shortened: at this type size the long form ran left of its
+    # own panel and over the right-hand axis label of panel (a).
+    ax.set_title("(b) Energy and interchangeability"); ax.grid(alpha=.3)
+    legend_below(ax, ncol=2)
+    fs.save(fig, f"{FIG}/fig_properties.png", legend_rows=2)
 
 
 # ------------------------------------------------------ Fig: validation traj
@@ -71,12 +76,19 @@ def fig_validation(res5, res25):
                     label="1-D reference" if n == 1 else None)
             ax.plot(t, r['P_rlc'][n]/1e5, color=C_RLC, lw=1.1, ls="--",
                     label="RLC reduced" if n == 1 else None)
+            rmse_n = float(np.sqrt(np.mean(
+                ((r['P_rlc'][n] - r['P_ref'][n]) / 1e5) ** 2)))
+            ax.fill_between(t, r['P_rlc'][n]/1e5 - rmse_n,
+                            r['P_rlc'][n]/1e5 + rmse_n, color=C_RLC,
+                            alpha=0.22, lw=0,
+                            label=r"$\pm$RMSE"
+                                  if n == 1 else None)
         ax.set_xlabel("Time [h]"); ax.set_ylabel("Node pressure [bar]")
         ax.set_title(f"({'a' if lab=='5' else 'b'}) {lab}% H$_2$ blend  "
                      f"(MAPE = {r['mape']:.2f}%)")
         ax.grid(alpha=.3)
         legend_below(ax, ncol=2)
-    fs.save(fig, f"{FIG}/fig_validation_pressure.png", legend_rows=1)
+    fs.save(fig, f"{FIG}/fig_validation_pressure.png", legend_rows=2)
 
 
 # ------------------------------------------------------ Fig: timing + error
@@ -114,7 +126,7 @@ def fig_timing(res5, res25):
     for i in range(2):
         sp = tref[i]/trlc[i]
         ax.text(i, tref[i]*1.9, f"{sp:.0f}$\\times$ faster", ha="center",
-                fontsize=8, color=C_ACC, fontweight="bold")
+                fontsize=10, color=C_ACC, fontweight="bold")
     ax.grid(alpha=.3, axis="y")
     legend_below(ax, ncol=2)
     ax = axs[1]
@@ -122,7 +134,9 @@ def fig_timing(res5, res25):
         t = r['t']/3600.0
         emax = np.max(np.abs(r['P_rlc'][1:]-r['P_ref'][1:])/1e5, axis=0)
         ax.plot(t, emax, color=c, lw=1.8, label=lab)
-    ax.set_xlabel("Time [h]"); ax.set_ylabel("Max. pressure error [bar]")
+    ax.set_xlabel("Time [h]")
+    # Shortened to fit the axes height at this type size.
+    ax.set_ylabel("Max. error [bar]")
     ax.set_title("(b) Reduction error vs. time"); ax.grid(alpha=.3)
     legend_below(ax, ncol=2)
     fs.save(fig, f"{FIG}/fig_timing.png", legend_rows=1)
@@ -166,7 +180,10 @@ def fig_network():
               if not T.has_edge(a, b)]
 
     # Side of each edge on which to hang its label: +1 = left of a->b, -1 = right.
-    SIDE = {0: +1, 1: +1, 2: +1, 3: -1, 4: -1, 5: -1, 6: -1}
+    # Pipe N3-N5 is the only vertical edge, and its label is hung on the OUTSIDE
+    # of the loop, where nothing else runs, rather than on the inside, where the
+    # two chords converge on N3 and the label of N3-N4 ends.
+    SIDE = {0: +1, 1: +1, 2: +1, 3: -1, 4: -1, 5: +1, 6: -1}
     # Where each node's withdrawal annotation goes, clear of every edge label.
     ANN = {1: (-0.05, -0.40, "center", "top"), 2: (0.0, 0.42, "center", "bottom"),
            3: (0.40, 0.10, "left", "bottom"), 4: (-0.42, -0.06, "right", "center"),
@@ -176,7 +193,8 @@ def fig_network():
     dmin, dmax = dias.min(), dias.max()
     cmap = plt.get_cmap("Blues")
 
-    fig, ax = plt.subplots(figsize=(7.0, 4.0))
+    fig, ax = plt.subplots(figsize=(7.0, 5.6))
+    pipe_labels = []
     for k, (a, b, L, D) in enumerate(net.pipes):
         xa, ya = pos[a]; xb, yb = pos[b]
         if k in chords:
@@ -186,32 +204,34 @@ def fig_network():
             frac = (D - dmin) / max(dmax - dmin, 1e-9)
             ax.plot([xa, xb], [ya, yb], "-", color=cmap(0.38 + 0.5 * frac),
                     lw=1.6, zorder=1, solid_capstyle="round")
+        # The label is placed now and rotated later. A rotation is an angle on
+        # the PAGE, so it equals the angle of the pipe only when the two axes
+        # carry the same number of units per inch; the axes are therefore set
+        # to an equal aspect below, and the angle is in any case re-derived from
+        # the final transform at draw time rather than from the data.
         mx, my = (xa + xb) / 2, (ya + yb) / 2
         dx, dy = xb - xa, yb - ya
         L2 = np.hypot(dx, dy)
-        ang = np.degrees(np.arctan2(dy, dx))
-        if ang > 90:
-            ang -= 180
-        elif ang < -90:
-            ang += 180
         ox, oy = SIDE[k] * -dy / L2 * 0.30, SIDE[k] * dx / L2 * 0.30
-        ax.text(mx + ox, my + oy, f"P{k}: {L/1000:.0f} km, {D:.1f} m",
-                fontsize=9.5, ha="center", va="center", color="0.30",
-                rotation=ang, rotation_mode="anchor", zorder=5)
+        pipe_labels.append(
+            (ax.text(mx + ox, my + oy, f"P{k}: {L/1000:.0f} km, {D:.1f} m",
+                     fontsize=11.5, ha="center", va="center", color="0.30",
+                     rotation_mode="anchor", zorder=5),
+             (xa, ya), (xb, yb)))
 
     for n, (x, y) in pos.items():
         col = C_ACC if n == net.source else C_RLC
         ax.scatter([x], [y], s=360, color=col, zorder=3, edgecolor="white",
                    linewidth=1.2)
         ax.text(x, y, f"N{n}", ha="center", va="center", color="white",
-                fontweight="bold", fontsize=10, zorder=4)
+                fontweight="bold", fontsize=11.5, zorder=4)
         if net.demand_nom[n] > 0:
             ox, oy, ha, va = ANN[n]
             ax.text(x + ox, y + oy, f"{net.demand_nom[n]:.0f} kg/s", ha=ha,
-                    va=va, fontsize=9.5, color="0.30", zorder=4)
+                    va=va, fontsize=11.5, color="0.30", zorder=4)
     sx, sy = pos[net.source]
     ax.text(sx, sy + 0.55, "Supply, 66 bar", ha="center", va="bottom",
-            fontsize=9.5, color=C_ACC, fontweight="bold", zorder=4)
+            fontsize=11.5, color=C_ACC, fontweight="bold", zorder=4)
 
     hs = [Line2D([], [], marker="o", ls="none", ms=9, mfc=C_ACC, mec="white",
                  label="Supply node"),
@@ -222,9 +242,24 @@ def fig_network():
           Line2D([], [], color=C_ACC, lw=1.8, ls="--",
                  label="Loop-closing chord")]
     ax.set_xlim(-1.0, 9.4)
-    ax.set_ylim(-1.75, 4.10)
+    ax.set_ylim(-1.78, 4.15)
+    # One unit of x and one unit of y are now the same length on the page, so
+    # the angle of a pipe in the data is its angle on the page. Without this the
+    # two axes are scaled differently, and a label set to the angle of its own
+    # pipe still prints askew from it. Reading the angle off the transform
+    # instead is not enough on its own, because the layout pass that fits the
+    # legend strip moves the axes afterwards and leaves any angle taken here
+    # stale, which is what the previous attempt at this did.
+    ax.set_aspect("equal", adjustable="box")
+    for txt, p0, p1 in pipe_labels:
+        ang = np.degrees(np.arctan2(p1[1] - p0[1], p1[0] - p0[0]))
+        if ang > 90:
+            ang -= 180
+        elif ang < -90:
+            ang += 180
+        txt.set_rotation(ang)
     ax.axis("off")
-    fs.legend_below(ax, ncol=2, y=-0.02, fontsize=10.0, handles=hs,
+    fs.legend_below(ax, ncol=2, y=-0.02, fontsize=11, handles=hs,
                     labels=[h.get_label() for h in hs])
     fs.save(fig, f"{FIG}/fig_network.png", legend_rows=2)
     apply_style()

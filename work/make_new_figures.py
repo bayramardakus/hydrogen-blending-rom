@@ -1,4 +1,4 @@
-"""make_new_figures.py - figures revised in Revision 2.
+"""make_new_figures.py - the second group of manuscript figures.
 
 Every figure here is drawn through `figstyle`, so it shares one type size, one
 palette, bracketed units, sentence-case labels, and a frameless legend BELOW the
@@ -54,16 +54,20 @@ def fig_transport_verification():
     # its own title and its legend off the right-hand edge of the figure, and
     # left panels (a) and (b) with axes too narrow for their legends. Giving (c)
     # the full width fixes all three at once.
-    fig = plt.figure(figsize=(fs.W3, 6.2))
+    fig = plt.figure(figsize=(fs.W3, 6.9))
     # Explicit margins: panel (c)'s scenario names sit OUTSIDE its axes, and
     # figstyle.save() crops at x=0 to pin the canvas to the column width, so any
     # label that runs past the left edge is lost. hspace is generous because
     # each panel of row 1 carries a two-row legend below it.
-    gs = fig.add_gridspec(2, 2, height_ratios=[1.0, 1.15],
-                          left=0.235, right=0.985, top=0.96, bottom=0.15,
-                          hspace=0.62, wspace=0.30)
-    ax = [fig.add_subplot(gs[0, 0]), fig.add_subplot(gs[0, 1]),
-          fig.add_subplot(gs[1, :])]
+    # The scenario names are set large, so panel (c) needs a wider
+    # left margin than panels (a) and (b), which would be starved by it. The
+    # two rows therefore get a gridspec each, with their own left margin.
+    gs1 = fig.add_gridspec(1, 2, left=0.105, right=0.985,
+                           top=0.968, bottom=0.688, wspace=0.32)
+    gs2 = fig.add_gridspec(1, 1, left=0.305, right=0.985,
+                           top=0.474, bottom=0.145)
+    ax = [fig.add_subplot(gs1[0, 0]), fig.add_subplot(gs1[0, 1]),
+          fig.add_subplot(gs2[0, 0])]
 
     # ---- (a) convergence of the peak error ----------------------------
     rows = [r for r in conv['rows'] if isinstance(r['M'], (int, np.integer))]
@@ -72,10 +76,10 @@ def fig_transport_verification():
     cfl = [r for r in conv['rows'] if r['M'] == 'CFL'][0]
     cfl3 = [r for r in conv['rows'] if r['M'] == 'CFL/3'][0]
 
-    ax[0].loglog(Ms, pk, 'o-', color=C['rlc'], ms=3.5, label=r"Uniform $M$")
+    ax[0].loglog(Ms, pk, 'o-', color=C['rlc'], ms=3.5, label=r"Uniform $N_{\mathrm{c}}$")
     ax[0].plot([cfl['ns'] / net.n_pipes], [max(cfl['peak'].values())], '*',
                ms=9, color=C['acc'], ls='none',
-               label=r"CFL-matched $M_k$")
+               label=r"CFL-matched $N_{\mathrm{c},k}$")
     ax[0].plot([cfl3['ns'] / net.n_pipes], [max(cfl3['peak'].values())], 'D',
                ms=3.5, color=C['grn'], ls='none',
                label=r"CFL-matched, $T_s/3$")
@@ -84,20 +88,23 @@ def fig_transport_verification():
     # offset AWAY from the curve (up and to the right) and given an opaque
     # backing box: placed below-right, as before, they landed underneath the
     # next marker and were unreadable.
-    for M, dx, dy in ((1, 9, -13), (4, 9, -13)):
+    # The offsets are generous. At the type size used here
+    # the callout boxes reached back up to the curve they label.
+    for M, dx, dy in ((1, 10, -27), (4, 8, -29)):
         v = [r for r in rows if r['M'] == M][0]
-        ax[0].annotate(f"$M$={M}", (M, max(v['peak'].values())),
+        ax[0].annotate(f"$N_{{\\mathrm{{c}}}}$={M}", (M, max(v['peak'].values())),
                        textcoords="offset points", xytext=(dx, dy),
-                       fontsize=7, color="0.30", ha="left", va="center",
+                       fontsize=10, color="0.30", ha="left", va="center",
                        bbox=dict(fc="white", ec="none", alpha=0.85, pad=0.8))
-    ax[0].set_xlabel(r"Cells per pipe $M$")
+    ax[0].set_xlabel(r"Cells per pipe $N_{\mathrm{c}}$")
     fs.ylabel(ax[0], "Peak error [vol-pts]")
     fs.title(ax[0], 'a', "Numerical diffusion of the peak")
-    fs.legend_below(ax[0], ncol=2, y=-0.30, fontsize=7.0)
+    fs.legend_below(ax[0], ncol=2, y=-0.30, fontsize=10)
 
     # ---- (b) front smearing -------------------------------------------
     pulse = lambda t: 0.30 if 4 * 3600 <= t < 10 * 3600 else 0.05
     te = conv['te']
+    series = []
     for M, col, ls in [(1, C['ol'], '--'), (4, C['acc'], '-.'),
                        (20, C['grn'], ':')]:
         c = build_adv_composition(net, props, P0, Q0, M=M)
@@ -106,14 +113,18 @@ def fig_transport_verification():
         X[:, 0] = 0.05
         for k in range(len(te) - 1):
             X[:, k + 1] = Ad @ X[:, k] + Bd[:, 0] * pulse(te[k])
-        ax[1].plot(te / 3600, (c['Wsel'][3] @ X) * 100, ls, color=col,
-                   label=f"$M$ = {M}")
+        y = (c['Wsel'][3] @ X) * 100
+        ax[1].plot(te / 3600, y, ls, color=col,
+                   label=f"$N_{{\\mathrm{{c}}}}$ = {M}")
+        series.append((y, col, ls, 1.2))
     ax[1].plot(te / 3600, conv['ref_pulse'][3] * 100, '-', color=C['ref'],
                lw=1.6, label="Plug-flow reference")
+    series.append((conv['ref_pulse'][3] * 100, C['ref'], '-', 1.6))
+
     ax[1].set_xlabel("Time [h]")
     fs.ylabel(ax[1], "H$_2$ at N3 [vol%]")
     fs.title(ax[1], 'b', "Front smearing, 6 h pulse")
-    fs.legend_below(ax[1], ncol=2, y=-0.30, fontsize=7.0)
+    fs.legend_below(ax[1], ncol=2, y=-0.30, fontsize=9.8)
 
     # ---- (c) frozen-flow envelope --------------------------------------
     sc = stru['S3']
@@ -131,11 +142,11 @@ def fig_transport_verification():
         t = t.replace("d2 ", "N2 ").replace("d5 ", "N5 ")
         lab.append(t + (f"  [{s['rev']} rev.]" if s['rev'] else ""))
     ax[2].set_yticks(y)
-    ax[2].set_yticklabels(lab, fontsize=7.0)
+    ax[2].set_yticklabels(lab, fontsize=9.8)
     ax[2].set_xlabel("Delivered-blend error [vol-pts]")
     ax[2].grid(axis='y', alpha=0)
     fs.title(ax[2], 'c', "Frozen-flow validity envelope, didactic network")
-    fs.legend_below(ax[2], ncol=2, y=-0.22, fontsize=7.0)
+    fs.legend_below(ax[2], ncol=2, y=-0.22, fontsize=10)
 
     fs.save(fig, _p("fig_transport_verification.png"), legend_rows=2,
             tight=False)
@@ -149,7 +160,7 @@ def fig_backoff():
     fig, ax = fs.panels(2)
 
     ax[0].plot(D, [r['mass'] for r in back], 'o-', color=C['rlc'], ms=4,
-               label="Green-H$_2$ uptake, mass basis")
+               label="Green-H$_2$ uptake (mass)")
     ax[0].set_xlabel(r"Constraint back-off $\Delta$ [vol-pts]")
     fs.ylabel(ax[0], "Uptake [%]")
     fs.title(ax[0], 'a', "Cost of the back-off")
@@ -158,18 +169,31 @@ def fig_backoff():
     ax[1].plot(D, [r['peak'] for r in back], 's--', color=C['acc'], ms=4,
                label="Peak delivered blend")
     ax[1].axhline(20.0, color=C['ol'], ls=':',
-                  label="Interchangeability limit, 20 vol%")
+                  label="Limit, 20 vol%")
     viol = [r for r in back if r['viol'] > 0]
     if viol:
         ax[1].plot([r['D'] * 100 for r in viol], [r['peak'] for r in viol],
                    'o', ms=8, mfc='none', mec=C['ol'], mew=1.3, ls='none',
                    label="Limit exceeded")
+    # The spread of the twenty-realisation ensemble at the adopted
+    # back-off, drawn as an error bar so the figure carries its own uncertainty.
+    try:
+        ens = np.load("ensemble.npy", allow_pickle=True)
+        pk = np.array([r['peak'] for r in ens], float)
+        ax[1].errorbar([2.0], [pk.mean()], yerr=[pk.std(ddof=1)], fmt='D',
+                       ms=4.5, color=C['grn'], capsize=3, lw=1.1, zorder=4,
+                       label=r"Ensemble mean $\pm$ s.d.")
+    except Exception:
+        pass
     ax[1].set_xlabel(r"Constraint back-off $\Delta$ [vol-pts]")
     fs.ylabel(ax[1], "Peak H$_2$ [vol%]")
     fs.title(ax[1], 'b', "Safety margin obtained")
-    fs.legend_below(ax[1], ncol=2, y=-0.30, fontsize=7.0)
+    # Headroom above the highest marker, so the open circle that flags the
+    # violation is drawn whole rather than clipped by the panel title.
+    ax[1].margins(y=0.16)
+    fs.legend_below(ax[1], ncol=2, y=-0.30, fontsize=10)
 
-    fs.save(fig, _p("fig_backoff.png"), legend_rows=2)
+    fs.save(fig, _p("fig_backoff.png"), legend_rows=3)
 
 
 # ======================================================================
@@ -190,11 +214,18 @@ def fig_estimator():
     ob = build_observer(A, B, Cm, P0, Q0, net, Ts)
     q_ref = ob['q_ref']
 
-    fig, ax = fs.panels(3)
+    # Two rows rather than three panels abreast: at one third of the canvas
+    # the log axes of (a) and (b) were too narrow to separate their decades.
+    fig = plt.figure(figsize=(fs.W3, 6.4))
+    gs = fig.add_gridspec(2, 2, height_ratios=[1.0, 1.0],
+                          left=0.095, right=0.985, top=0.955, bottom=0.155,
+                          hspace=0.95, wspace=0.26)
+    ax = [fig.add_subplot(gs[0, 0]), fig.add_subplot(gs[0, 1]),
+          fig.add_subplot(gs[1, :])]
     pct = [r['pct'] for r in rows]
 
     ax[0].loglog(pct, [r['legacy'][1] for r in rows], 'o--', color=C['ol'],
-                 ms=3.5, label=r"Previous tuning ($R_v=10^{-3}I$, states in Pa)")
+                 ms=3.5, label=r"Unreferenced covariance ($R_v=10^{-3}I$, states in Pa)")
     ax[0].loglog(pct, [r['fixed'][1] for r in rows], 's-', color=C['grn'],
                  ms=3.5, label=r"This work ($R_v=\sigma_v^2 I$, scaled model)")
     ax[0].axhline(np.abs(Q0).max(), color=C['ref'], ls=':',
@@ -202,16 +233,16 @@ def fig_estimator():
     ax[0].set_xlabel(r"Transducer noise [% of reading, $1\sigma$]")
     fs.ylabel(ax[0], "Flow error [kg/s]")
     fs.title(ax[0], 'a', "Unmeasured flow states")
-    fs.legend_below(ax[0], ncol=1, y=-0.30, fontsize=7.0)
+    fs.legend_below(ax[0], ncol=1, y=-0.30, fontsize=10)
 
     ax[1].loglog(pct, [r['legacy'][0] for r in rows], 'o--', color=C['ol'],
-                 ms=3.5, label="Previous tuning")
+                 ms=3.5, label="Unreferenced covariance")
     ax[1].loglog(pct, [r['fixed'][0] for r in rows], 's-', color=C['grn'],
                  ms=3.5, label="This work")
     ax[1].set_xlabel(r"Transducer noise [% of reading, $1\sigma$]")
     fs.ylabel(ax[1], "Pressure error [bar]")
     fs.title(ax[1], 'b', "Measured pressure states")
-    fs.legend_below(ax[1], ncol=1, y=-0.30, fontsize=7.0)
+    fs.legend_below(ax[1], ncol=1, y=-0.30, fontsize=10)
 
     # (c) recovery from a wrong FLOW estimate, under measurement noise
     rng = np.random.default_rng(1)
@@ -238,16 +269,19 @@ def fig_estimator():
     ax[2].set_xlabel("Time [h]")
     fs.ylabel(ax[2], "Normalised error [-]")
     fs.title(ax[2], 'c', "Recovery, 20 kg/s offset")
-    fs.legend_below(ax[2], ncol=1, y=-0.30, fontsize=7.0)
+    # one row: panel (c) spans the canvas, so its three keys fit side by side
+    fs.legend_below(ax[2], ncol=3, y=-0.24, fontsize=10)
 
-    fs.save(fig, _p("fig_estimator.png"), legend_rows=3)
+    fs.save(fig, _p("fig_estimator.png"), legend_rows=3, tight=False)
 
 
 # ======================================================================
 def _blend_panels(d, deliv_label, xlim_b, fname, west=False):
     mpc, rea = d['mpc'], d['rea']
     t = mpc['t']
-    fig, ax = fs.panels(2)
+    # Taller than the standard pair: at this type size the
+    # y-label of panel (b) was taller than the axes and lost its bracket.
+    fig, ax = fs.panels(2, height=3.2)
 
     if west:
         ax[0].fill_between(t, 5.0, mpc['aE'] * 100, color="#DCE7F2", step="mid",
@@ -265,29 +299,29 @@ def _blend_panels(d, deliv_label, xlim_b, fname, west=False):
         ax[0].step(t, mpc['u'] * 100, where="mid", color=C['rlc'],
                    label="MPC injection")
         ax[0].step(t, rea['u'] * 100, where="mid", color=C['ol'], ls="--",
-                   label="Full-injection baseline")
+                   label="Full injection")
         ncol_a, rows_a = 2, 2
     ax[0].set_xlim(0, xlim_b)
     ax[0].set_xlabel("Time [h]")
     fs.ylabel(ax[0], "Injected H$_2$ [vol%]")
     fs.title(ax[0], 'a', "Injection schedule")
-    fs.legend_below(ax[0], ncol=ncol_a, y=-0.30, fontsize=7.0)
+    fs.legend_below(ax[0], ncol=ncol_a, y=-0.30, fontsize=9.8)
 
     ax[1].plot(t, rea['ydel'].max(axis=1) * 100, '--', color=C['ol'],
-               label="Full-injection baseline")
+               label="Full injection")
     ax[1].plot(t, mpc['ydel'].max(axis=1) * 100, '-', color=C['rlc'],
                label="Composition-aware MPC")
     ax[1].axhline(20, color=C['acc'], ls=':',
-                  label="Interchangeability limit, 20 vol%")
+                  label="Limit, 20 vol%")
     ax[1].axhline(mpc['y_lim'] * 100, color=C['grn'], ls="-.",
-                  label="Constraint with back-off")
+                  label="With back-off")
     ax[1].set_xlim(0, xlim_b)
     ax[1].set_xlabel("Time [h]")
     fs.ylabel(ax[1], "Delivered H$_2$ [vol%]")
     fs.title(ax[1], 'b', f"Delivered blend, {deliv_label}")
-    fs.legend_below(ax[1], ncol=2, y=-0.30, fontsize=7.0)
+    fs.legend_below(ax[1], ncol=2, y=-0.30, fontsize=9.8)
 
-    fs.save(fig, _p(fname), legend_rows=2)
+    fs.save(fig, _p(fname), legend_rows=3)
 
 
 def fig_blend():
@@ -313,8 +347,10 @@ def fig_realnet_pressure():
     ax[0].axhline(60, color=C['acc'], ls=':', label="Delivery floor (60 bar)")
     ax[0].set_xlabel("Time [h]")
     fs.ylabel(ax[0], "Min. pressure [bar]")
-    fs.title(ax[0], 'a', "Pressure regulation under a contingency")
-    fs.legend_below(ax[0], ncol=2, y=-0.30, fontsize=7.0)
+    # Shortened: at this type size the long form ran past its
+    # own panel and over the y-label of panel (b).
+    fs.title(ax[0], 'a', "Pressure under a contingency")
+    fs.legend_below(ax[0], ncol=1, y=-0.30, fontsize=9.8)
 
     ax[1].plot(p['cl']['t'], p['cl']['psrc'], '-', color=C['rlc'],
                label="MPC compressor set-point")
@@ -324,11 +360,13 @@ def fig_realnet_pressure():
                   label="Outlet rating [70\u201384 bar]")
     ax[1].axhline(70, color=C['mut'], ls=':')
     ax[1].set_xlabel("Time [h]")
-    fs.ylabel(ax[1], "Outlet pressure [bar]")
+    # Set symbolically: spelled out at this type size the label
+    # was taller than the axes and its closing bracket was cropped.
+    fs.ylabel(ax[1], "Outlet $p$ [bar]")
     fs.title(ax[1], 'b', "Control action")
-    fs.legend_below(ax[1], ncol=2, y=-0.30, fontsize=7.0)
+    fs.legend_below(ax[1], ncol=1, y=-0.30, fontsize=9.8)
 
-    fs.save(fig, _p("fig_realnet_pressure.png"), legend_rows=2)
+    fs.save(fig, _p("fig_realnet_pressure.png"), legend_rows=3)
 
 
 # ======================================================================
@@ -348,20 +386,20 @@ def fig_robustness():
     ax[0].set_xlabel("Instrumented nodes [of 21]")
     fs.ylabel(ax[0], "Flow error [kg/s]")
     fs.title(ax[0], 'a', "Observer under sparse telemetry")
-    fs.legend_below(ax[0], ncol=2, y=-0.30, fontsize=7.0)
+    fs.legend_below(ax[0], ncol=2, y=-0.30, fontsize=10)
 
     lv = [x['lvl'] * 100 for x in r2]
     ax[1].plot(lv, [x['peak'] for x in r2], 'o-', color=C['rlc'], ms=4,
                label="Peak delivered blend")
     ax[1].axhline(20, color=C['acc'], ls=':',
-                  label="Interchangeability limit, 20 vol%")
+                  label="Limit, 20 vol%")
     ax[1].axhline(18, color=C['grn'], ls='-.',
-                  label="Constraint with back-off")
+                  label="With back-off")
     ax[1].set_ylim(14, 21.5)
     ax[1].set_xlabel(r"Green-H$_2$ forecast error [%, $1\sigma$ AR(1)]")
     fs.ylabel(ax[1], "Peak H$_2$ [vol%]")
     fs.title(ax[1], 'b', "Scheduler under forecast error")
-    fs.legend_below(ax[1], ncol=2, y=-0.30, fontsize=7.0)
+    fs.legend_below(ax[1], ncol=2, y=-0.30, fontsize=10)
 
     fs.save(fig, _p("fig_robustness.png"), legend_rows=2)
 

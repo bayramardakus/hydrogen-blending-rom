@@ -134,32 +134,16 @@ def make_figures(Hs,hres,Rs,rres,obs,comp):
     # other at the left end of the front, and a fixed +-9 pt vertical offset put
     # both labels underneath the markers, where they were unreadable. Crowded
     # points are labelled sideways with a leader line instead.
-    order = list(np.argsort(en))
-    span = max(en) - min(en)
-    crowd = [i for i in order
-             if min(abs(en[i] - en[j]) for j in order if j != i) < 0.06 * span]
-    hi = max(crowd, key=lambda i: mn[i]) if crowd else None
-    for rank, i in enumerate(order):
-        Rw, e, mm = Rs[i], en[i], mn[i]
-        crowded = i in crowd
-        if crowded:
-            dx, dy = -20, (16 if i == hi else 0)
-            ha, va = "right", "center"
-            ax.annotate(f"$R$={Rw:g}", (e, mm), (dx, dy),
-                        textcoords="offset points", ha=ha, va=va,
-                        fontsize=7.0, color="0.35",
-                        arrowprops=dict(arrowstyle='-', lw=0.5, color="0.65",
-                                        shrinkA=0, shrinkB=3))
-        else:
-            ax.annotate(f"$R$={Rw:g}", (e, mm), (0, 9),
-                        textcoords="offset points", ha="center", va="bottom",
-                        fontsize=6.5, color="0.35")
-    ax.margins(x=0.40, y=0.26)
+    # The per-point R labels are dropped. At the stiff end the
+    # points nearly coincide, so the labels overlapped each other and the
+    # front; the caption states that R falls from 1 at the lower-left to 0.005
+    # at the upper-right along the front.
+    ax.margins(x=0.10, y=0.18)
     ax.axhline(58,color=C_ACC,ls="--",lw=1.2,label="Delivery limit")
     ax.set_xlabel("Control effort [bar$^2$ h]")
     fs.ylabel(ax,"Min. pressure [bar]")
     ax.set_title("(b) Effort weight $R$ trade-off"); ax.grid(alpha=.3)
-    fs.legend_below(ax,ncol=2,y=-0.30)
+    fs.legend_below(ax,ncol=1,y=-0.30)
     # NOTE: the observer-convergence panel that used to sit here has been
     # removed. It showed the estimation error decaying to 1e-20 bar, which is
     # what a perfect model on a noiseless plant gives and says nothing about the
