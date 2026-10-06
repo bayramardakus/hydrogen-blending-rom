@@ -1,0 +1,26 @@
+{
+  "title": "Composition-Aware Reduced-Order Modelling of Real-Time Hydrogen Blending in Natural Gas Pipeline Networks: reproduction package",
+  "description": "Solvers, controller and figure scripts that reproduce every figure, table and number of the accompanying article in the International Journal of Hydrogen Energy. The SciGRID_gas IGGIELGN data set is not redistributed; it is downloaded separately from https://doi.org/10.5281/zenodo.4767098.",
+  "license": "mit",
+  "upload_type": "software",
+  "creators": [
+    {
+      "name": "Kus, Bayram Arda",
+      "affiliation": "Gaziantep University, Gaziantep 27310, Turkiye"
+    }
+  ],
+  "keywords": [
+    "hydrogen blending",
+    "natural gas pipeline networks",
+    "reduced-order modelling",
+    "model predictive control",
+    "gas composition tracking"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "10.5281/zenodo.4767098",
+      "relation": "isDerivedFrom",
+      "resource_type": "dataset"
+    }
+  ]
+}
